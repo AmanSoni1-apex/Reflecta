@@ -58,8 +58,10 @@ This structure allows Reflecta to evolve into a **full cognitive platform**
 without architectural rewrites.
 
 ---
-🧬 Layered Architecture
 
+
+🧬 Layered Architecture
+```
 ┌──────────────┐
 │  Controller  │  ← API Layer (FastAPI)
 └──────┬───────┘
@@ -78,6 +80,8 @@ without architectural rewrites.
 ┌──────────────┐
 │    Model     │  ← Domain & Persistence
 └──────────────┘
+```
+
 
 
 ## 🛠 Tech Stack
@@ -94,22 +98,20 @@ without architectural rewrites.
 ---
 
 ## 📂 Project Structure
+```
 
 Reflecta/
-│
-├── app/
-│   ├── controller/        # API routes
-│   ├── service/           # Cognitive & business logic
-│   ├── repository/        # Database interactions
-│   ├── model/             # Schemas & domain entities
-│   ├── database/          # DB setup & session
-│   └── main.py            # Application entry point
-│
-├── requirements.txt
-└── README.md
+├─ app/
+│  ├─ controller/     # API routes
+│  ├─ service/        # Cognitive logic
+│  ├─ repository/     # DB interactions
+│  ├─ model/          # Schemas & entities
+│  ├─ database/       # DB setup
+│  └─ main.py         # Entry point
+├─ requirements.txt
+└─ README.md
 
-
----
+```
 
 ## 🚀 Running Locally
 
@@ -117,14 +119,18 @@ Reflecta/
 git clone https://github.com/AmanSoni1-apex/Reflecta.git
 cd Reflecta
 python -m venv venv
+
 venv\Scripts\activate   # Windows
-# source venv/bin/activate  # Linux / macOS 
+# source venv/bin/activate  # Linux / macOS
+
 pip install -r requirements.txt
 
 📍 Server → http://127.0.0.1:8000
 📘 Docs → /docs
 
-🔮 Vision
+```
+
+## 🔮 Vision
 
 Reflecta is intentionally quiet software.
 
@@ -140,12 +146,12 @@ Minimal, calming frontend
 
 No social feeds. No dopamine loops.
 
-⚠️ Disclaimer
+## ⚠️ Disclaimer
 
 Reflecta does not provide medical or psychological advice.
-All emotional insights are reflective, not diagnostic.
+All emotional insights are reflective, not diagnostic Report .
 
-🤝 Contributing
+## 🤝 Contributing
 
 Reflecta welcomes contributors who care about:
 
@@ -157,9 +163,9 @@ clean, maintainable architecture
 
 Fork → Reflect → Improve → PR.
 
-👤 Author
+## 👤 Author
 
 Aman Soni
-Backend Engineer | Open Source Contributor
+Backend Engineer 
 
-🔗 GitHub: https://github.com/AmanSoni1-apex
+## 🔗 GitHub: https://github.com/AmanSoni1-apex
