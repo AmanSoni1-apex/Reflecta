@@ -60,3 +60,25 @@ def get_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
     return todo
 
 
+@router.put("/{todo_id}", response_model=TodoResponse)
+def update_todo(todo_id: int, todo: TodoCreate, db: Session = Depends(get_db)):
+    """
+    Update a Todo by ID
+    """
+    updated_todo = service.update_todo(db, todo_id, todo)
+    if not updated_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    return updated_todo
+
+
+@router.delete("/{todo_id}")
+def delete_todo(todo_id: int, db: Session = Depends(get_db)):
+    """
+    Delete a Todo by ID
+    """
+    success = service.delete_todo(db, todo_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    return {"message": "Todo deleted successfully"}
+
+

@@ -46,3 +46,20 @@ class TodoRespository:
         """
         return db.query(Todo).filter(Todo.id == todo_id).first()
 
+    def update(self, db: Session, todo: Todo, updated_data: dict) -> Todo:
+        """
+        Update an existing Todo
+        """
+        for key, value in updated_data.items():
+            setattr(todo, key, value)
+        db.commit()
+        db.refresh(todo)
+        return todo
+
+    def delete(self, db: Session, todo: Todo) -> None:
+        """
+        Delete a Todo
+        """
+        db.delete(todo)
+        db.commit()
+

@@ -50,6 +50,20 @@ class TodoService:
         """
         return self.repo.find_all(db)
 
+    def update_todo(self, db: Session, todo_id: int, todo_data: Todo):
+        existing_todo = self.repo.find_by_id(db, todo_id)
+        if not existing_todo:
+            return None
+        # Convert Pydantic model to dict, excluding defaults if needed (but here we want full update)
+        return self.repo.update(db, existing_todo, todo_data.dict())
+
+    def delete_todo(self, db: Session, todo_id: int) -> bool:
+        existing_todo = self.repo.find_by_id(db, todo_id)
+        if not existing_todo:
+            return False
+        self.repo.delete(db, existing_todo)
+        return True
+
     def get_todo_by_id(self, db: Session, todo_id: int) -> Todo | None:
         """
         Retrieve a single Todo by ID
