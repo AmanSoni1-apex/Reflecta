@@ -1,5 +1,8 @@
-# Pydantic schema for Todo creation requests
-# This schema defines what data the API receives when creating a new Todo
+# The todo_request is used and created so that we can accept the polished or one line content form the user for ex :- 
+# {
+#   "title": "Buy Milk",
+#   "description": "Get 2 liters of full cream milk"
+# } 
 
 from pydantic import BaseModel
 
