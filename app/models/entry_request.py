@@ -8,7 +8,7 @@ class EntryCreate(BaseModel):
     raw_content : str
 
     @field_validator('raw_content')
-    def not_empty(cls, v):   #not_empty(ModelClass, value) here the modelClass -> EntryCreate and v-> the value we are validating , this is not the normal function this is a validator function of the pydantic   
+    def not_empty(cls, v):   # not_empty(ModelClass, value) here the modelClass -> EntryCreate and v-> the value we are validating , this is not the normal function this is a validator function of the pydantic   
         if not v.strip():
             raise ValueError('Content cannot be empty or whitespace only')
         return v
