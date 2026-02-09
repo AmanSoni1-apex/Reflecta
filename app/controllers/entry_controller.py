@@ -11,3 +11,7 @@ service=EntryService()
 @router.post("/",response_model=EntryResponse)
 def create_entry(entry :EntryCreate , db: Session=Depends(get_db)):
     return service.create_entry(db , entry)
+
+@router.get("/", response_model=list[EntryResponse])
+def get_entries(db: Session = Depends(get_db)):
+    return service.get_all_entries(db)

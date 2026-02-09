@@ -8,3 +8,6 @@ class EntryRepository:
         db.commit()
         db.refresh(entry)
         return entry
+
+    def get_all(self, db: Session) -> list[Entry]:
+        return db.query(Entry).all()

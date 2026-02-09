@@ -12,10 +12,12 @@ class Entry(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # The Raw Thought (The "Mud")
-    # We use "Text" instead of "String" because Text can hold huge amounts of data.
     raw_content = Column(Text, nullable=False)
 
+    # AI Insights (The "Refinement")
+    # We save these so they appear in your history (GET /entries)
+    sentiment = Column(String(50), nullable=True)
+    summary = Column(Text, nullable=True)
+
     # The Timestamp
-    # We need to know WHEN you had this thought to analyze trends later.
-    # func.now() makes the database automatically set the time when we save it.
     created_at = Column(DateTime(timezone=True), server_default=func.now())

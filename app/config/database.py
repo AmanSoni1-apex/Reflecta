@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from typing import Generator
 
-# SQLite database URL (creates todo.db in the project root)
-DATABASE_URL = "sqlite:///./todo.db"
+# Database URL (We changed this from todo.db to reflecta.db to force a schema update)
+DATABASE_URL = "sqlite:///./reflecta.db"
 
 # Create the engine
 # echo=True logs all SQL statements (useful for debugging)

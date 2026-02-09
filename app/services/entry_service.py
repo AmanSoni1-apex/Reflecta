@@ -38,11 +38,7 @@ class EntryService:
         return response['message']['content']
 
     def create_entry(self, db: Session, entry_data: EntryCreate) -> dict:
-        # Step A: Save the raw "Mud" first 
-        db_entry = Entry(raw_content=entry_data.raw_content)
-        saved_entry = self.repo.save(db, db_entry)
-
-        # Step B: Pass the mud through the "Sieve"
+        # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)
         ai_response_text = self.analyze_thought(entry_data.raw_content)
         
         # Default empty insights
@@ -51,7 +47,7 @@ class EntryService:
             "summary": "Analysing..."
         }
 
-        # Step C: Parse the AI Insight (JSON)
+        # Step B: Parse the AI Insight (JSON)
         try:
             json_match = re.search(r'\{.*\}', ai_response_text, re.DOTALL)
             if json_match:
@@ -59,11 +55,22 @@ class EntryService:
         except Exception as e:
             print(f"Error parsing AI JSON: {e}")
 
+        # Step C: Save the raw "Mud" AND the "Insights" to the DB
+        db_entry = Entry(
+            raw_content=entry_data.raw_content,
+            sentiment=insights.get("sentiment"),
+            summary=insights.get("summary")
+        )
+        saved_entry = self.repo.save(db, db_entry)
+
         # Step D: Return the merged data (Postman Receipt)
         return {
             "id": saved_entry.id,
             "raw_content": saved_entry.raw_content,
             "created_at": saved_entry.created_at,
-            "sentiment": insights.get("sentiment"),
-            "summary": insights.get("summary")
+            "sentiment": saved_entry.sentiment,
+            "summary": saved_entry.summary
         }
+
+    def get_all_entries(self, db: Session) -> list[Entry]:
+        return self.repo.get_all(db)
