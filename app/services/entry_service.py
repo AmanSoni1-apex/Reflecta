@@ -1,6 +1,6 @@
 import ollama
 import json
-import re
+import re # re -> regular expression AI models are "chatty." Even if you ask for JSON, they often add extra words like "Sure, here it is..." which breaks our code , re module acts like a JSON Magnet. It scans a big pile of messy text, ignores the talkative noise, and "extracts" only the part between { and }.
 from sqlalchemy.orm import Session
 from app.repositories.entry_repository import EntryRepository
 from app.models.entry_model import Entry

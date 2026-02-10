@@ -10,3 +10,5 @@ class TodoResponse(BaseModel):
     id: int
     title: str
     description: str | None
+    priority:str | None = None
+    category:str | None = None

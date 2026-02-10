@@ -7,6 +7,10 @@ from app.repositories.todo_repository import TodoRespository
 from app.models.todo_model import Todo
 from app.models.todo_request import TodoCreate
 
+import ollama
+import json
+import re 
+
 
 class TodoService:
     """
@@ -34,6 +38,8 @@ class TodoService:
         if not todo.title.strip():
             raise ValueError("Title can't be empty")
         
+        #  1. Ask the AI for the refinment suggestion's
+        refinment
         # Create SQLAlchemy model instance from schema
         db_todo = Todo(title=todo.title, description=todo.description)
         return self.repo.save(db, db_todo)
@@ -69,3 +75,31 @@ class TodoService:
         Retrieve a single Todo by ID
         """
         return self.repo.find_by_id(db, todo_id)
+
+
+    def refine_todo(self, title: str, description: str = ""):
+        # The AI "Refiner" Prompt
+        system_prompt = """
+        You are a productivity expert for the 'Reflecta' app.
+        Analyze the task and return ONLY a JSON object with:
+        "category": (One word: Work, Personal, Home, Health, Errand, or Other)
+        "priority": (One word: High, Medium, or Low)
+        """
+        
+        content = f"Task: {title}\nDescription: {description}"
+        
+        try:
+            response = ollama.chat(model='gemma3:4b', messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': content},
+            ])
+            ai_text = response['message']['content']
+            
+            # Simple JSON extraction
+            json_match = re.search(r'\{.*\}', ai_text, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+        except Exception as e:
+            print(f"AI Refinement failed: {e}")
+            
+        return {"category": "General", "priority": "Medium"}

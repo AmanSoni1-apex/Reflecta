@@ -10,6 +10,7 @@ class Todo(Base):
     title = Column(String(255) , nullable=False)
     description = Column(String(1024), nullable=True)
 
-
+    priority=Column(String(50), nullable=True, default="Medium")
+    category=Column(String(100), nullable=True, default="General") 
 
   
