@@ -22,38 +22,22 @@ class TodoService:
         self.repo = TodoRespository()
 
     def create_todo(self, db: Session, todo: TodoCreate) -> Todo:
-        """
-        Create a new Todo with validation
-        
-        Args:
-            db: SQLAlchemy database session
-            todo: TodoCreate schema from API request
-            
-        Returns:
-            The created Todo object
-            
-        Raises:
-            ValueError: If title is empty
-        """
         if not todo.title.strip():
             raise ValueError("Title can't be empty")
         
-        #  1. Ask the AI for the refinment suggestion's
-        refinment
-        # Create SQLAlchemy model instance from schema
-        db_todo = Todo(title=todo.title, description=todo.description)
+        # 1. Ask the AI for refinement suggestions (The Smart Step!)
+        refinement = self.refine_todo(todo.title, todo.description or "")
+        
+        # 2. Create the record using the AI's suggestions
+        db_todo = Todo(
+            title=todo.title, 
+            description=todo.description,
+            priority=refinement.get("priority", "Medium"),
+            category=refinement.get("category", "General")
+        )
         return self.repo.save(db, db_todo)
     
     def get_all_todos(self, db: Session) -> list[Todo]:
-        """
-        Retrieve all Todos from the database
-        
-        Args:
-            db: SQLAlchemy database session
-            
-        Returns:
-            List of all Todo objects
-        """
         return self.repo.find_all(db)
 
     def update_todo(self, db: Session, todo_id: int, todo_data: Todo):
@@ -71,11 +55,7 @@ class TodoService:
         return True
 
     def get_todo_by_id(self, db: Session, todo_id: int) -> Todo | None:
-        """
-        Retrieve a single Todo by ID
-        """
         return self.repo.find_by_id(db, todo_id)
-
 
     def refine_todo(self, title: str, description: str = ""):
         # The AI "Refiner" Prompt

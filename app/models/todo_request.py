@@ -8,6 +8,9 @@ from pydantic import BaseModel
 
 
 class TodoCreate(BaseModel):
+    # Note: Pydantic is a 'Parser', not just a 'Validator'. 
+    # If the user sends a number (like 123) for the title, 
+    # Pydantic will 'coerce' (convert) it into a string automatically.
     title: str
     description: str | None = None
     # description = attribute / variable , None = default value ( if the user dont provide the value use these default value's)
