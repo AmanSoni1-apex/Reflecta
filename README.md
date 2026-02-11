@@ -16,7 +16,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-success?style=flat)
 ![Architecture](https://img.shields.io/badge/Architecture-Layered-purple?style=flat)
 ![Status](https://img.shields.io/badge/Status-Active%20Development-orange?style=flat)
-![Visitors](https://komarev.com/ghpvc/?username=AmanSoni1-apex&label=Repo%20Views&color=green&base=Reflecta)
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=AmanSoni1-apex.Reflecta)
 
 </div>
 
