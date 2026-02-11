@@ -8,6 +8,7 @@ from app.controllers.entry_controller import router as entry_router
 from app.config.database import engine, Base
 from app.models.todo_model import Todo
 from app.models.entry_model import Entry
+from app.controllers.analytics_controller import router as analytics_router
 
 # Create all database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -15,7 +16,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.include_router(todo_router, prefix="/todos")
 app.include_router(entry_router, prefix="/entries")
-
+app.include_router(analytics_router , prefix="/analytics")
 
 @app.get("/")
 def health():

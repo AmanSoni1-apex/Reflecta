@@ -63,3 +63,19 @@ class TodoRespository:
         db.delete(todo)
         db.commit()
 
+    def get_category_counts(self, db: Session):
+        # 1. Get ALL Todos
+        all_todos = db.query(Todo).all()
+        
+        # 2. Count them manually
+        counts = {}
+        for todo in all_todos:
+            cat = todo.category
+            if cat in counts:
+                counts[cat] += 1
+            else:
+                counts[cat] = 1
+                
+        # 3. Return the result
+        return list(counts.items())
+

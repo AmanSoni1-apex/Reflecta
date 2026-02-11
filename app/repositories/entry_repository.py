@@ -11,3 +11,19 @@ class EntryRepository:
 
     def get_all(self, db: Session) -> list[Entry]:
         return db.query(Entry).all()
+
+    def get_mood_counts(self, db: Session):
+        # 1. Get ALL entries (The raw pile)
+        all_entries = db.query(Entry).all()
+        
+        # 2. Count them manually
+        counts = {}
+        for entry in all_entries:
+            mood = entry.sentiment
+            if mood in counts:
+                counts[mood] += 1
+            else:
+                counts[mood] = 1
+                
+        # 3. Return the result
+        return list(counts.items())
