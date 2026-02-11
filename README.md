@@ -16,7 +16,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-success?style=flat)
 ![Architecture](https://img.shields.io/badge/Architecture-Layered-purple?style=flat)
 ![Status](https://img.shields.io/badge/Status-Active%20Development-orange?style=flat)
-![Visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FAmanSoni1-apex%2FReflecta&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
+![Visitors](https://komarev.com/ghpvc/?username=AmanSoni1-apex&label=Repo%20Views&color=green&base=Reflecta)
 
 </div>
 
