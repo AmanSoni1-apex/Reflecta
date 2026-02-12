@@ -74,3 +74,10 @@ class EntryService:
 
     def get_all_entries(self, db: Session) -> list[Entry]:
         return self.repo.get_all(db)
+
+    def delete_entry(self, db: Session, entry_id: int):
+        entry = self.repo.get_by_id(db, entry_id)
+        if not entry:
+            return None
+        self.repo.delete(db, entry)
+        return True

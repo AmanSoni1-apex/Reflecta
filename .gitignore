@@ -7,9 +7,14 @@ __pycache__/
 venv/
 env/
 .env
+.venv/
+
+# Secrets & Sessions
+.sesskey
 
 # Database
 *.db
+
 *.sqlite3
 
 # IDE

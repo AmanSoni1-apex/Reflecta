@@ -25,7 +25,7 @@
 ## 🧠 Why Reflecta Exists
 
 Most productivity tools optimize **output**.
-
+ 
 Reflecta optimizes **awareness**.
 
 People don’t think in clean bullet points —  

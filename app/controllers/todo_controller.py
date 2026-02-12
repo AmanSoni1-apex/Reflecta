@@ -9,7 +9,7 @@
 
 
 
-from fastapi import APIRouter, Depends, HTTPException  # APIRouter groups routes; Depends for dependency injection
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.services.todo_service import TodoService
 from app.models.todo_request import TodoCreate
@@ -21,18 +21,12 @@ service = TodoService()
 
 
 @router.post("/", response_model=TodoResponse)
-def create(todo: TodoCreate, db: Session = Depends(get_db)):
+def create(todo: TodoCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
-    Create a new Todo
-    
-    Args:
-        todo: TodoCreate schema from request body
-        db: Database session injected by FastAPI dependency injection
-        
-    Returns:
-        TodoResponse: Created Todo with ID
+    Create a new Todo with immediate response and background AI refinement.
     """
-    return service.create_todo(db, todo)
+    return service.create_todo(db, todo, background_tasks)
+
 
 
 @router.get("/", response_model=list[TodoResponse])
@@ -80,5 +74,15 @@ def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     if not success:
         raise HTTPException(status_code=404, detail="Todo not found")
     return {"message": "Todo deleted successfully"}
+
+
+@router.post("/bulk-delete")
+def bulk_delete(ids: list[int], db: Session = Depends(get_db)):
+    """
+    Delete multiple Todos by their IDs
+    """
+    count = service.delete_todos(db, ids)
+    return {"message": f"Successfully purged {count} assignments", "count": count}
+
 
 

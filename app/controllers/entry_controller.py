@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter , Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.services.entry_service import EntryService
@@ -15,3 +15,10 @@ def create_entry(entry :EntryCreate , db: Session=Depends(get_db)):
 @router.get("/", response_model=list[EntryResponse])
 def get_entries(db: Session = Depends(get_db)):
     return service.get_all_entries(db)
+
+@router.delete("/{entry_id}")
+def delete_entry(entry_id: int, db: Session = Depends(get_db)):
+    result = service.delete_entry(db, entry_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    return {"message": "Entry deleted successfully"}

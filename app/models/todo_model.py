@@ -1,6 +1,6 @@
 # SQLAlchemy ORM model for the Todo database table
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from app.config.database import Base
 
 class Todo(Base):
@@ -12,5 +12,6 @@ class Todo(Base):
 
     priority=Column(String(50), nullable=True, default="Medium")
     category=Column(String(100), nullable=True, default="General") 
+    completed=Column(Boolean, default=False)
 
   

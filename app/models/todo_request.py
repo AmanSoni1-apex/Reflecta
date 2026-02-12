@@ -13,5 +13,6 @@ class TodoCreate(BaseModel):
     # Pydantic will 'coerce' (convert) it into a string automatically.
     title: str
     description: str | None = None
+    completed: bool = False
     # description = attribute / variable , None = default value ( if the user dont provide the value use these default value's)
     # these values are imp as they act as the fallback plan , str= "Type Hint"

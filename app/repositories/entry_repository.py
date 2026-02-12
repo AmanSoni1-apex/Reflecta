@@ -12,6 +12,13 @@ class EntryRepository:
     def get_all(self, db: Session) -> list[Entry]:
         return db.query(Entry).all()
 
+    def get_by_id(self, db: Session, entry_id: int) -> Entry:
+        return db.query(Entry).filter(Entry.id == entry_id).first()
+
+    def delete(self, db: Session, entry: Entry):
+        db.delete(entry)
+        db.commit()
+
     def get_mood_counts(self, db: Session):
         # 1. Get ALL entries (The raw pile)
         all_entries = db.query(Entry).all()
