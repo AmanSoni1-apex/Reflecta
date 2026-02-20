@@ -27,8 +27,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def read_index():
-    # Serve the professional UI as the home page
+    # Serve the Landing Page
     return FileResponse('static/index.html')
+
+@app.get("/dashboard")
+def read_dashboard():
+    # Serve the professional UI as the home page
+    return FileResponse('static/dashboard.html')
 
 # Register API Routers
 app.include_router(todo_router, prefix="/todos")

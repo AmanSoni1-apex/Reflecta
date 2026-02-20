@@ -4,633 +4,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reflecta | Zenith</title>
-    <!-- Tailwind CSS 3.x -->
+    <title>Reflecta — A Private Cognitive Mirror</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0a0a0b;
-            color: #ffffff;
+            background: #0a0a0b;
+            color: #f5f5f7;
+            overflow-x: hidden;
         }
 
-        .glass-card {
-            background: rgba(24, 24, 27, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .nav-item-active {
-            background: rgba(6, 182, 212, 0.1);
-            color: #22d3ee;
-            border: 1px solid rgba(6, 182, 212, 0.2);
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
         }
 
-        .tab-content {
-            display: none;
+        /* Gradient background */
+        .gradient-bg {
+            background: radial-gradient(circle at 20% 20%, rgba(255, 139, 90, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(179, 136, 255, 0.06) 0%, transparent 50%),
+                #0a0a0b;
         }
 
-        .tab-content.active {
-            display: block;
+        /* Glass effect */
+        .glass {
+            background: rgba(26, 26, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* Glow effect */
+        .glow-orange {
+            box-shadow: 0 0 80px rgba(255, 139, 90, 0.3);
+        }
+
+        .glow-purple {
+            box-shadow: 0 0 80px rgba(179, 136, 255, 0.2);
+        }
+
+        /* Animated gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #ff8b5a 0%, #ffd15c 50%, #b388ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Pulse animation */
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .pulse-dot {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        /* Fade in on scroll */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff8b5a;
+            border-radius: 4px;
+        }
+
+        /* Laptop mockup frame */
+        .laptop-frame {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 40px 80px 40px;
+            background: linear-gradient(180deg, #2a2a2e 0%, #1a1a1e 100%);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+        }
+
+        .laptop-screen {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #000;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .laptop-base {
+            width: 120%;
+            height: 20px;
+            background: linear-gradient(180deg, #1a1a1e 0%, #0d0d0f 100%);
+            margin: 0 -10%;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 
-<body class="flex min-h-screen overflow-hidden">
+<body class="gradient-bg">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-[#111116] border-r border-white/5 flex flex-col p-6 fixed h-full z-20">
-        <div class="flex items-center mb-10 px-2">
-            <div class="bg-cyan-500/10 p-2 rounded-lg mr-3">
-                <i data-lucide="zap" class="w-6 h-6 text-cyan-400"></i>
-            </div>
-            <h1 class="text-xl font-bold tracking-tight">Reflecta</h1>
-        </div>
-
-        <nav class="space-y-1.5 flex-1">
-            <a href="#" onclick="showTab('dashboard')"
-                class="nav-btn flex items-center space-x-3 py-3 px-4 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all nav-item-active"
-                id="nav-dashboard">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
-            <a href="#" onclick="showTab('journal')"
-                class="nav-btn flex items-center space-x-3 py-3 px-4 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                id="nav-journal">
-                <i data-lucide="book-open" class="w-5 h-5"></i>
-                <span class="font-medium">Journal</span>
-            </a>
-            <a href="#" onclick="showTab('tasks')"
-                class="nav-btn flex items-center space-x-3 py-3 px-4 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                id="nav-tasks">
-                <i data-lucide="check-square" class="w-5 h-5"></i>
-                <span class="font-medium">Tasks</span>
-            </a>
-            <a href="#"
-                class="flex items-center space-x-3 py-3 px-4 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                <span class="font-medium">Analytics</span>
-            </a>
-        </nav>
-
-        <div class="pt-6 border-t border-white/5 mt-auto">
-            <div class="flex items-center">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex-shrink-0"></div>
-                <div class="ml-3 overflow-hidden">
-                    <p class="text-sm font-semibold truncate text-white">Aman Soni</p>
-                    <!-- <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Pro Member</p> -->
+    <!-- SECTION 1: HERO -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20 relative">
+        <div class="max-w-7xl w-full">
+            <!-- Logo + Status -->
+            <div class="text-center mb-16 fade-in">
+                <div class="inline-flex items-center gap-3 glass px-6 py-3 rounded-full mb-8">
+                    <div class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></div>
+                    <span class="text-xs font-mono uppercase tracking-widest text-gray-400">v2.0 • Privacy-First • Local
+                        AI</span>
                 </div>
+                <h1 class="text-6xl md:text-8xl font-black mb-6 tracking-tight leading-none">
+                    A Private<br />
+                    <span class="gradient-text">Cognitive Mirror</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
+                    Reflecta distills the chaos of raw, unstructured thoughts into actionable, emotion-aware
+                    self-insight.
+                </p>
+            </div>
+
+            <!-- Laptop Mockup -->
+            <div class="fade-in" style="animation-delay: 0.2s;">
+                <div class="laptop-frame glow-orange">
+                    <div class="laptop-screen">
+                        <img src="/static/assets/dashboard_preview.png.png" alt="Reflecta Dashboard"
+                            class="w-full opacity-90 hover:opacity-100 transition-opacity duration-500">
+                    </div>
+                </div>
+                <div class="laptop-base"></div>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="text-center mt-20 fade-in" style="animation-delay: 0.4s;">
+                <p class="text-sm font-mono text-gray-600 uppercase tracking-widest mb-4">Scroll to explore</p>
+                <i data-lucide="chevron-down" class="w-6 h-6 mx-auto text-gray-600 animate-bounce"></i>
             </div>
         </div>
-    </aside>
+    </section>
 
-    <!-- Main Content -->
-    <main class="ml-64 flex-1 flex flex-col h-screen overflow-y-auto bg-[#0a0a0b] p-10 relative">
-
-        <!-- Header Section -->
-        <header class="flex items-center justify-between mb-10 pb-6 border-b border-white/5">
-            <div>
-                <!-- <h2 class="text-xs font-medium text-gray-500 uppercase tracking-[0.2em]">Zenith Hub</h2> -->
-                <h1 class="text-3xl font-bold mt-1" id="header-title">Welcome back, Aman</h1>
+    <!-- SECTION 2: THE PROBLEM -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+        <div class="max-w-4xl w-full fade-in">
+            <div class="text-center mb-12">
+                <span
+                    class="inline-block text-xs font-mono uppercase tracking-widest text-orange-400 bg-orange-400/10 px-4 py-2 rounded-full mb-6">The
+                    Problem</span>
             </div>
-            <div class="flex items-center space-x-4">
-                <button
-                    class="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-all">
-                    <i data-lucide="search" class="w-5 h-5"></i>
-                </button>
-                <button
-                    class="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-all relative">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span
-                        class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0a0a0b]"></span>
-                </button>
+            <h2 class="text-5xl md:text-7xl font-black mb-12 text-center leading-tight">
+                Most productivity tools ask:<br />
+                <span class="text-gray-500">"What do you need to do?"</span>
+            </h2>
+            <div class="glass p-12 rounded-3xl mb-12">
+                <p class="text-2xl md:text-3xl font-light leading-relaxed text-gray-300 text-center">
+                    Reflecta asks something more dangerous:
+                </p>
+                <p class="text-3xl md:text-5xl font-bold mt-8 text-center gradient-text leading-tight">
+                    "What state of mind created this thought?"
+                </p>
             </div>
-        </header>
+            <p class="text-xl text-gray-400 text-center max-w-3xl mx-auto leading-relaxed">
+                We're tired of <span class="text-orange-400 font-semibold">to-do list anxiety</span> — the endless loop
+                of adding tasks without understanding <span class="text-white font-semibold">why we feel
+                    overwhelmed</span> by them.
+            </p>
+        </div>
+    </section>
 
-        <!-- DASHBOARD TAB -->
-        <section id="tab-dashboard" class="tab-content active space-y-10">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Stats will load here -->
-                <div id="stats-grid" class="contents">
-                    <div class="glass-card p-6 rounded-2xl animate-pulse h-32"></div>
-                    <div class="glass-card p-6 rounded-2xl animate-pulse h-32"></div>
-                    <div class="glass-card p-6 rounded-2xl animate-pulse h-32"></div>
+    <!-- SECTION 3: THE INSIGHT (Psychology) -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+        <div class="max-w-6xl w-full">
+            <div class="text-center mb-16 fade-in">
+                <span
+                    class="inline-block text-xs font-mono uppercase tracking-widest text-purple-400 bg-purple-400/10 px-4 py-2 rounded-full mb-6">The
+                    Science</span>
+                <h2 class="text-5xl md:text-6xl font-black mb-8 leading-tight">
+                    Metacognition:<br />Your Brain's Superpower
+                </h2>
+                <p class="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                    The human brain can monitor and regulate its own thought processes — but it's the first thing that
+                    breaks under stress.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 fade-in">
+                <!-- Card 1 -->
+                <div class="glass p-10 rounded-2xl hover:border-orange-400/30 transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-orange-400/10 flex items-center justify-center mb-6">
+                        <i data-lucide="brain" class="w-7 h-7 text-orange-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Pattern Recognition</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        When Reflecta identifies "Anxious" entries over 14 days, it isn't just showing data — it's
+                        acting as an <span class="text-white font-semibold">externalized prefrontal cortex</span>.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass p-10 rounded-2xl hover:border-purple-400/30 transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-purple-400/10 flex items-center justify-center mb-6">
+                        <i data-lucide="shield-check" class="w-7 h-7 text-purple-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Emotional Regulation</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        By <span class="text-white font-semibold">externalizing and labeling</span> an emotion, you
+                        reduce its power over you. Recognition is the first step to control.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass p-10 rounded-2xl hover:border-yellow-400/30 transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-yellow-400/10 flex items-center justify-center mb-6">
+                        <i data-lucide="zap" class="w-7 h-7 text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Cognitive Load</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        The average person holds <span class="text-white font-semibold">7±2 items</span> in working
+                        memory. Writing externalizes the load, freeing your mind to think clearly.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass p-10 rounded-2xl hover:border-green-400/30 transition-all duration-300">
+                    <div class="w-14 h-14 rounded-xl bg-green-400/10 flex items-center justify-center mb-6">
+                        <i data-lucide="trending-up" class="w-7 h-7 text-green-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Self-Awareness at Scale</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Reflecta helps you recognize the <span class="text-white font-semibold">root cause of
+                            burnout</span> before it happens. Prevention through pattern visibility.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: THE SOLUTION -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+        <div class="max-w-6xl w-full fade-in">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block text-xs font-mono uppercase tracking-widest text-orange-400 bg-orange-400/10 px-4 py-2 rounded-full mb-6">How
+                    It Works</span>
+                <h2 class="text-5xl md:text-6xl font-black mb-8 leading-tight">
+                    Not a To-Do List.<br />
+                    <span class="gradient-text">A Cognitive System.</span>
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <!-- Feature 1 -->
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400/20 to-yellow-400/20 flex items-center justify-center mx-auto mb-6 glow-orange">
+                        <i data-lucide="pen-line" class="w-10 h-10 text-orange-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Write Freely</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Dump your unfiltered thoughts. No structure required. Just raw input.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-400/20 to-pink-400/20 flex items-center justify-center mx-auto mb-6 glow-purple">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-purple-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">AI Analysis</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        Local Gemma 3 AI analyzes sentiment, extracts tasks, identifies patterns. 100% private.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-400/20 to-cyan-400/20 flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="brain-circuit" class="w-10 h-10 text-green-400"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Insights Over Time</h3>
+                    <p class="text-gray-400 leading-relaxed">
+                        See your emotional patterns, stress triggers, productivity cycles.
+                    </p>
                 </div>
             </div>
 
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="glass-card p-8 rounded-3xl border-cyan-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-                    <div class="flex items-center justify-between mb-8">
+            <!-- Key Differentiators -->
+            <div class="glass p-12 rounded-3xl">
+                <h3 class="text-3xl font-bold mb-8 text-center">What Makes Reflecta Different</h3>
+                <div class="grid md:grid-cols-2 gap-6 text-lg">
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400 flex-shrink-0 mt-1"></i>
                         <div>
-                            <h3 class="text-lg font-bold">Emotional Spectrum</h3>
-                            <p class="text-xs text-gray-500 mt-1">Sentiment distribution over time</p>
+                            <span class="font-semibold text-white">100% Local AI</span>
+                            <p class="text-gray-400 text-base mt-1">Gemma 3 runs on your machine via Ollama. No cloud.
+                                No data leaks.</p>
                         </div>
-                        <i data-lucide="pie-chart" class="w-5 h-5 text-gray-600"></i>
                     </div>
-                    <div class="h-64 flex items-center justify-center rounded-2xl bg-white/2 relative">
-                        <canvas id="moodChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="glass-card p-8 rounded-3xl">
-                    <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400 flex-shrink-0 mt-1"></i>
                         <div>
-                            <h3 class="text-lg font-bold">Priority Matrix</h3>
-                            <p class="text-xs text-gray-500 mt-1">Categorized action items</p>
+                            <span class="font-semibold text-white">Privacy-First</span>
+                            <p class="text-gray-400 text-base mt-1">Your thoughts never leave your device. Zero
+                                tracking.</p>
                         </div>
-                        <i data-lucide="activity" class="w-5 h-5 text-gray-600"></i>
                     </div>
-                    <div class="h-64 flex items-center justify-center rounded-2xl bg-white/2 relative">
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- NEW: Growth Calibration Heatmap -->
-                <div class="glass-card p-8 rounded-[2rem] col-span-full">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400 flex-shrink-0 mt-1"></i>
                         <div>
-                            <h3 class="text-lg font-bold">Growth Calibration</h3>
-                            <p class="text-xs text-gray-500 mt-1">Reflection consistency (Last 30 days)</p>
-                        </div>
-                        <div
-                            class="flex items-center space-x-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                            <span>Less</span>
-                            <div class="flex space-x-1">
-                                <div class="w-3 h-3 rounded-sm bg-white/5 border border-white/5"></div>
-                                <div class="w-3 h-3 rounded-sm bg-cyan-500/20"></div>
-                                <div class="w-3 h-3 rounded-sm bg-cyan-500/50"></div>
-                                <div class="w-3 h-3 rounded-sm bg-cyan-500"></div>
-                            </div>
-                            <span>More</span>
+                            <span class="font-semibold text-white">No Dopamine Loops</span>
+                            <p class="text-gray-400 text-base mt-1">No streaks, no gamification. Just honest
+                                self-reflection.</p>
                         </div>
                     </div>
-                    <div id="activity-heatmap" class="flex flex-wrap gap-2.5">
-                        <!-- Heatmap dots load here -->
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <span class="font-semibold text-white">Open Source</span>
+                            <p class="text-gray-400 text-base mt-1">Full transparency. Inspect the code. Built in
+                                public.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- JOURNAL TAB -->
-        <section id="tab-journal" class="tab-content space-y-10">
-            <div class="max-w-3xl mx-auto w-full">
-                <div class="glass-card p-8 rounded-[2rem] shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
-                    <h3 class="text-xl font-bold mb-2">Deep Reflection</h3>
-                    <p class="text-sm text-gray-500 mb-8 font-medium">Capture your unfiltered thoughts.</p>
+    <!-- SECTION 5: THE PROOF -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+        <div class="max-w-5xl w-full fade-in">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block text-xs font-mono uppercase tracking-widest text-green-400 bg-green-400/10 px-4 py-2 rounded-full mb-6">Built
+                    in Public</span>
+                <h2 class="text-5xl md:text-6xl font-black mb-8 leading-tight">
+                    Proven by the Community
+                </h2>
+            </div>
 
-                    <form onsubmit="handleEntrySubmit(event)" id="entry-form">
-                        <textarea name="raw_content" id="entry-content" placeholder="Type what's on your mind..."
-                            class="w-full h-48 bg-black/40 border border-white/5 rounded-2xl p-6 text-lg focus:outline-none focus:border-cyan-500/50 transition-all font-light leading-relaxed placeholder:text-gray-800"
-                            required></textarea>
-                        <button type="submit"
-                            class="mt-6 w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-bold tracking-tight transition-all active:scale-[0.98] shadow-[0_10px_30px_rgba(6,182,212,0.2)]">Forge
-                            Reflection</button>
-                    </form>
+            <!-- Stats -->
+            <div class="grid md:grid-cols-3 gap-8 mb-16">
+                <div class="glass p-10 rounded-2xl text-center hover:border-orange-400/30 transition-all">
+                    <div class="text-6xl font-black gradient-text mb-4">142</div>
+                    <p class="text-xl font-semibold text-gray-300 mb-2">GitHub Clones</p>
+                    <p class="text-sm text-gray-500 font-mono">In 14 days</p>
                 </div>
-
-                <div class="mt-16">
-                    <div class="flex items-center justify-between mb-8">
-                        <h3 class="text-xl font-bold flex items-center">
-                            <i data-lucide="history" class="w-5 h-5 mr-3 text-gray-500"></i>
-                            Historical Logs
-                        </h3>
-                        <span
-                            class="text-[10px] font-black uppercase tracking-widest text-gray-600 bg-white/5 px-3 py-1 rounded-full border border-white/5">Auto-Archived</span>
-                    </div>
-                    <div id="journal-feed" class="space-y-4">
-                        <!-- Journal load here -->
-                    </div>
+                <div class="glass p-10 rounded-2xl text-center hover:border-purple-400/30 transition-all">
+                    <div class="text-6xl font-black gradient-text mb-4">83</div>
+                    <p class="text-xl font-semibold text-gray-300 mb-2">Unique Developers</p>
+                    <p class="text-sm text-gray-500 font-mono">Pulled the architecture</p>
+                </div>
+                <div class="glass p-10 rounded-2xl text-center hover:border-yellow-400/30 transition-all">
+                    <div class="text-6xl font-black gradient-text mb-4">v2.0</div>
+                    <p class="text-xl font-semibold text-gray-300 mb-2">Current Version</p>
+                    <p class="text-sm text-gray-500 font-mono">Continuously evolving</p>
                 </div>
             </div>
-        </section>
 
-        <!-- TASKS TAB -->
-        <section id="tab-tasks" class="tab-content space-y-10">
-            <div class="max-w-2xl">
-                <div class="flex items-center justify-between mb-8">
+            <!-- Testimonial / Quote -->
+            <div class="glass p-12 rounded-3xl border-l-4 border-orange-400">
+                <p class="text-2xl md:text-3xl font-light leading-relaxed text-gray-300 mb-6">
+                    "This isn't about motivation, streaks, or dopamine. It's about <span
+                        class="text-white font-semibold">self-reflection at scale</span> — calm, private, and brutally
+                    honest."
+                </p>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-purple-400"></div>
                     <div>
-                        <h3 class="text-2xl font-bold mb-1">Action Center</h3>
-                        <p class="text-xs text-gray-500 font-medium">Coordinate your tactical objectives.</p>
+                        <p class="font-bold text-white">Aman Soni</p>
+                        <p class="text-sm text-gray-500 font-mono">Creator of Reflecta</p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <button id="bulk-delete-btn" onclick="bulkDelete()"
-                            class="hidden px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white text-xs font-bold rounded-xl transition-all border border-red-500/20 active:scale-95 shadow-lg shadow-red-500/10">
-                            Purge Selected
-                        </button>
-                        <div class="flex items-center space-x-2 bg-white/5 px-3 py-2 rounded-xl border border-white/5">
-                            <input type="checkbox" id="select-all" onclick="toggleAll(this)"
-                                class="w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer accent-cyan-500">
-                            <label for="select-all"
-                                class="text-[10px] font-black uppercase tracking-widest text-gray-500 cursor-pointer select-none">Select
-                                All</label>
-                        </div>
-                    </div>
-                </div>
-
-                <p class="text-gray-500 mb-10 font-medium">Turn insights into tangible impact.</p>
-
-                <form onsubmit="handleTaskSubmit(event)" id="task-form" class="mb-12">
-                    <div class="flex">
-                        <input name="title" id="task-title" placeholder="Define a new assignment..."
-                            class="flex-1 bg-white/5 border border-white/10 rounded-l-2xl p-5 text-sm focus:outline-none focus:border-cyan-500/50"
-                            required>
-                        <button type="submit"
-                            class="bg-cyan-600 hover:bg-cyan-500 px-8 py-4 rounded-r-2xl font-bold shadow-lg shadow-cyan-900/20">
-                            <i data-lucide="plus" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <div id="task-list" class="space-y-3">
-                    <!-- Tasks load here -->
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
+    <!-- SECTION 6: THE INVITATION (CTA) -->
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+        <div class="max-w-4xl w-full text-center fade-in">
+            <h2 class="text-6xl md:text-8xl font-black mb-8 leading-none">
+                Just you…<br />
+                <span class="gradient-text">and your patterns</span>
+            </h2>
+            <p class="text-2xl text-gray-400 mb-16 max-w-2xl mx-auto leading-relaxed">
+                Start reflecting. No sign-ups. No tracking. No noise.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
+                <a href="/dashboard"
+                    class="group px-10 py-5 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-2xl text-xl font-bold text-black hover:shadow-2xl hover:shadow-orange-400/50 transition-all duration-300 hover:scale-105">
+                    Try Reflecta
+                    <i data-lucide="arrow-right"
+                        class="w-5 h-5 inline ml-2 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+                <a href="https://github.com/AmanSoni1-apex/Reflecta" target="_blank"
+                    class="group px-10 py-5 glass rounded-2xl text-xl font-bold text-white hover:border-white/20 transition-all duration-300 flex items-center gap-3">
+                    <i data-lucide="github" class="w-6 h-6"></i>
+                    View on GitHub
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-white/5 pt-12">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-600">
+                    <div class="flex items-center gap-2">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
+                            <i data-lucide="brain" class="w-4 h-4 text-black"></i>
+                        </div>
+                        <span class="font-mono">Reflecta v2.0</span>
+                    </div>
+                    <p class="font-mono">Built in public by <a href="https://github.com/AmanSoni1-apex" target="_blank"
+                            class="text-orange-400 hover:text-orange-300 transition-colors">@AmanSoni1-apex</a></p>
+                    <p class="font-mono">FastAPI • Gemma 3 • Open Source</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script>
-        // Init Lucide
+        // Initialize Lucide icons
         lucide.createIcons();
 
-        let moodChartInstance = null;
-        let categoryChartInstance = null;
-
-        // Data Management
-        async function loadDashboard() {
-            try {
-                const res = await fetch('/analytics/dashboard');
-                const stats = await res.json();
-
-                const velocityColor = stats.sentiment_velocity >= 0 ? 'emerald-400' : 'red-400';
-                const velocityIcon = stats.sentiment_velocity >= 0 ? '↑' : '↓';
-
-                document.getElementById('stats-grid').innerHTML = `
-                    <div class="glass-card p-6 rounded-2xl border border-white/5 group hover:border-cyan-500/30 transition-all cursor-default shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 group-hover:scale-110 transition-transform"><i data-lucide="brain" class="w-5 h-5"></i></div>
-                            <span class="text-[10px] font-bold text-${velocityColor} bg-${velocityColor}/10 px-2 py-0.5 rounded-full">${velocityIcon}${Math.abs(stats.sentiment_velocity)}%</span>
-                        </div>
-                        <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Sentiment Velocity</p>
-                        <h2 class="text-3xl font-bold mt-1 tracking-tight">${stats.total_entries || 0}</h2>
-                        <div class="h-8 mt-4 opacity-10 group-hover:opacity-30 transition-opacity"><svg viewBox="0 0 100 20" class="w-full h-full text-cyan-400"><path d="M0 15 Q 25 5, 50 15 T 100 5" fill="none" stroke="currentColor" stroke-width="2" /></svg></div>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl border border-white/5 group hover:border-magenta-500/30 transition-all cursor-default shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-magenta-500/10 rounded-lg text-magenta-400 group-hover:scale-110 transition-transform"><i data-lucide="check-circle" class="w-5 h-5"></i></div>
-                            <span class="text-[10px] font-bold text-magenta-400 bg-magenta-400/10 px-2 py-0.5 rounded-full">ACTIVE</span>
-                        </div>
-                        <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Assignments</p>
-                        <h2 class="text-3xl font-bold mt-1 tracking-tight">${stats.total_todos || 0}</h2>
-                        <div class="h-8 mt-4 opacity-10 group-hover:opacity-30 transition-opacity"><svg viewBox="0 0 100 20" class="w-full h-full text-magenta-400"><path d="M0 15 L 20 5 L 40 12 L 60 4 L 80 18 L 100 10" fill="none" stroke="currentColor" stroke-width="2" /></svg></div>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl border border-white/5 group hover:border-amber-500/30 transition-all cursor-default shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400 group-hover:scale-110 transition-transform"><i data-lucide="flame" class="w-5 h-5"></i></div>
-                            <span class="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">STREAK</span>
-                        </div>
-                        <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">Focus Streak</p>
-                        <h2 class="text-3xl font-bold mt-1 tracking-tight">Active</h2>
-                        <div class="h-8 mt-4 opacity-10 group-hover:opacity-30 transition-opacity"><svg viewBox="0 0 100 20" class="w-full h-full text-amber-400"><path d="M0 10 C 20 10, 20 0, 40 0 C 60 0, 60 20, 80 20 C 100 20, 100 10, 120 10" fill="none" stroke="currentColor" stroke-width="2" /></svg></div>
-                    </div>
-                `;
-                renderHeatmap(stats.activity_heatmap);
-                lucide.createIcons();
-                initCharts(stats);
-
-            } catch (err) { console.error(err); }
-        }
-
-        function renderHeatmap(data) {
-            if (!data) return;
-            const container = document.getElementById('activity-heatmap');
-            const sortedDates = Object.keys(data).sort();
-            container.innerHTML = sortedDates.map(date => {
-                const count = data[date];
-                const opacity = count === 0 ? 'bg-white/5' : count === 1 ? 'bg-cyan-500/30' : count === 2 ? 'bg-cyan-500/60' : 'bg-cyan-500';
-                return `<div class="w-5 h-5 rounded-md ${opacity} border border-white/5 transition-all hover:scale-125 hover:border-white/20 cursor-help" title="${date}: ${count} signals"></div>`;
-            }).join('');
-        }
-
-        function initCharts(stats) {
-
-            const ctxMood = document.getElementById('moodChart').getContext('2d');
-            const ctxCat = document.getElementById('categoryChart').getContext('2d');
-
-            if (moodChartInstance) moodChartInstance.destroy();
-            if (categoryChartInstance) categoryChartInstance.destroy();
-
-            const moodLabels = Object.keys(stats.mood_distribution || { 'Neutral': 1 });
-            const moodData = Object.values(stats.mood_distribution || { 'Neutral': 1 });
-
-            if (typeof Chart === 'undefined') {
-                console.error("Chart.js not loaded yet");
-                return;
-            }
-
-            moodChartInstance = new Chart(ctxMood, {
-                type: 'doughnut',
-                data: {
-                    labels: moodLabels,
-                    datasets: [{
-                        data: moodData,
-                        backgroundColor: ['#22d3ee', '#d946ef', '#fbbf24', '#94a3b8'],
-                        borderWidth: 0,
-                        hoverOffset: 12
-                    }]
-                },
-                options: {
-                    cutout: '76%',
-                    plugins: {
-                        legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { animateScale: true }
-                }
-            });
-
-            const catLabels = Object.keys(stats.category_distribution || { 'Focus': 1, 'Deep': 1 });
-            const catData = Object.values(stats.category_distribution || { 'Focus': 1, 'Deep': 1 });
-
-            categoryChartInstance = new Chart(ctxCat, {
-                type: 'radar',
-                data: {
-                    labels: catLabels,
-                    datasets: [{
-                        label: 'Signals',
-                        data: catData,
-                        backgroundColor: 'rgba(34, 211, 238, 0.1)',
-                        borderColor: '#22d3ee',
-                        pointBackgroundColor: '#22d3ee',
-                        borderWidth: 1.5
-                    }]
-                },
-                options: {
-                    scales: {
-                        r: {
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            angleLines: { color: 'rgba(255,255,255,0.05)' },
-                            pointLabels: { font: { size: 10, weight: '500' }, color: '#94a3b8' },
-                            ticks: { display: false }
-                        }
-                    },
-                    plugins: { legend: { display: false } },
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        async function loadJournal() {
-            try {
-                const res = await fetch('/entries');
-                const entries = await res.json();
-                const feed = document.getElementById('journal-feed');
-                feed.innerHTML = entries.length ? entries.reverse().map(e => {
-                    const moodColor = e.sentiment === 'Happy' ? 'cyan-400' : e.sentiment === 'Anxious' ? 'magenta-500' : 'gray-400';
-                    return `
-                        <div class="glass-card p-6 rounded-3xl border border-white/5 hover:border-cyan-500/20 transition-all group shadow-md">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-${moodColor} bg-${moodColor}/5 px-2 py-0.5 rounded-full border border-${moodColor}/10">${e.sentiment || 'SIGNAL'}</span>
-                                <div class="flex items-center space-x-3 text-gray-600">
-                                    <span class="text-[10px] font-medium tracking-tight">${new Date(e.created_at).toLocaleDateString()}</span>
-                                    <button onclick="deleteEntry(${e.id})" class="hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="text-base font-bold text-white leading-tight opacity-90">${e.summary || 'Deep Syncing...'}</h4>
-                            <p class="text-gray-500 text-xs mt-3 leading-relaxed line-clamp-2 font-medium">${e.raw_content}</p>
-                        </div>
-                    `;
-                }).join('') : '<div class="text-center py-16 opacity-30"><i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4"></i><p class="text-sm font-medium">Historical logs are vacant.</p></div>';
-                lucide.createIcons();
-            } catch (err) { console.error(err); }
-        }
-
-        async function loadTasks() {
-            try {
-                const res = await fetch('/todos');
-                const todos = await res.json();
-                const list = document.getElementById('task-list');
-                list.innerHTML = todos.length ? todos.map(t => {
-                    const pColor = t.priority === 'High' ? 'red-400' : t.priority === 'Medium' ? 'amber-400' : 'blue-400';
-                    return `
-                        <div class="flex justify-between items-center p-4 bg-white/2 rounded-2xl border border-white/5 transition-all hover:bg-white/5 group shadow-sm">
-                            <div class="flex items-center">
-                                <input type="checkbox" data-id="${t.id}" onchange="updatePurgeButton()" class="task-check w-4 h-4 mr-4 rounded border-white/10 bg-white/5 accent-cyan-500 cursor-pointer">
-                                <div onclick="toggleTask(${t.id})" class="w-5 h-5 rounded-md border border-white/10 bg-white/5 flex items-center justify-center cursor-pointer transition-all hover:border-cyan-500/40 ${t.completed ? 'bg-cyan-500 border-cyan-500' : ''}">
-                                    ${t.completed ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
-                                </div>
-                                <div class="flex flex-col ml-4">
-                                    <p class="text-sm font-semibold transition-all tracking-tight ${t.completed ? 'line-through text-gray-600' : 'text-gray-100'}">${t.title}</p>
-                                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-${pColor} mt-0.5 opacity-60">${t.category} • ${t.priority}</p>
-                                </div>
-                            </div>
-                            <button onclick="deleteTask(${t.id})" class="text-gray-700 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `;
-                }).join('') : '<p class="text-gray-600 italic text-sm py-8 text-center bg-white/2 rounded-2xl border border-dashed border-white/5">No active signals discovered.</p>';
-
-                // Reset master checkbox
-                document.getElementById('select-all').checked = false;
-                updatePurgeButton();
-                lucide.createIcons();
-            } catch (err) { console.error(err); }
-        }
-
-        function toggleAll(master) {
-            document.querySelectorAll('.task-check').forEach(cb => cb.checked = master.checked);
-            updatePurgeButton();
-        }
-
-        function updatePurgeButton() {
-            const checked = document.querySelectorAll('.task-check:checked');
-            const btn = document.getElementById('bulk-delete-btn');
-            if (checked.length > 0) {
-                btn.classList.remove('hidden');
-            } else {
-                btn.classList.add('hidden');
-            }
-        }
-
-        async function bulkDelete() {
-            const checked = document.querySelectorAll('.task-check:checked');
-            const ids = Array.from(checked).map(cb => parseInt(cb.getAttribute('data-id')));
-
-            if (!confirm(`Purge ${ids.length} selected assignments?`)) return;
-
-            try {
-                const res = await fetch('/todos/bulk-delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ids)
-                });
-                if (res.ok) {
-                    loadTasks();
-                    loadDashboard();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-
-        async function handleEntrySubmit(e) {
-            e.preventDefault();
-            const content = document.getElementById('entry-content').value;
-            const btn = e.target.querySelector('button');
-            const originalText = btn.innerHTML;
-
-            btn.innerHTML = '<span class="animate-pulse">Analyzing Signals...</span>';
-            btn.disabled = true;
-
-            try {
-                const res = await fetch('/entries', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ raw_content: content })
-                });
-                if (res.ok) {
-                    document.getElementById('entry-form').reset();
-                    loadJournal();
-                    loadDashboard();
-                }
-            } catch (err) { console.error(err); }
-            finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
-        async function handleTaskSubmit(e) {
-            e.preventDefault();
-            const titleInput = document.getElementById('task-title');
-            const title = titleInput.value;
-            const list = document.getElementById('task-list');
-
-            // 1. Optimistic Update: Prepend a "Syncing" dummy task immediately
-            const tempId = Date.now();
-            const dummyHtml = `
-                <div id="temp-task-${tempId}" class="flex justify-between items-center p-4 bg-white/2 rounded-2xl border border-cyan-500/20 transition-all group shadow-sm animate-pulse">
-                    <div class="flex items-center">
-                        <div class="w-5 h-5 rounded-md border border-white/10 bg-white/5 flex items-center justify-center"></div>
-                        <div class="flex flex-col ml-4">
-                            <p class="text-sm font-semibold text-gray-400">${title}</p>
-                            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-400 mt-0.5 opacity-60">Syncing Intelligence...</p>
-                        </div>
-                    </div>
-                    <div class="w-4 h-4 rounded-full bg-white/5"></div>
-                </div>
-            `;
-
-            // Remove empty state if present
-            if (list.innerHTML.includes('No active signals discovered')) list.innerHTML = '';
-
-            list.insertAdjacentHTML('afterbegin', dummyHtml);
-            titleInput.value = ''; // Clear input immediately
-
-            try {
-                const res = await fetch('/todos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title: title })
-                });
-
-                if (res.ok) {
-                    loadTasks();
-                    loadDashboard();
-                } else {
-                    // Rollback if failed
-                    document.getElementById(`temp-task-${tempId}`).remove();
-                    titleInput.value = title;
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById(`temp-task-${tempId}`).remove();
-                titleInput.value = title;
-            }
-        }
-
-
-        async function deleteTask(id) {
-            if (!confirm('Purge this assignment?')) return;
-            try {
-                const res = await fetch(`/todos/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadTasks();
-                    loadDashboard();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        async function deleteEntry(id) {
-            if (!confirm('Expunge this reflection?')) return;
-            try {
-                const res = await fetch(`/entries/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    loadJournal();
-                    loadDashboard();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        async function toggleTask(id) {
-            try {
-                // To toggle, we first need the current state or just send the new state 
-                // Since our UI already 'knows' the state, we can simplify or fetch first.
-                // But for a 'Gold' feel, let's just fetch all todos, find the one, and flip it.
-                const res = await fetch('/todos');
-                const todos = await res.json();
-                const todo = todos.find(t => t.id === id);
-                if (!todo) return;
-
-                const updateRes = await fetch(`/todos/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: todo.title,
-                        description: todo.description,
-                        completed: !todo.completed
-                    })
-                });
-
-                if (updateRes.ok) {
-                    loadTasks();
-                    loadDashboard();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-
-        // Tab Switching Logic
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('nav-item-active'));
-            document.getElementById('nav-' + tabId).classList.add('nav-item-active');
-
-            const titles = { 'dashboard': 'Zenith Hub', 'journal': 'Deep Journaling', 'tasks': 'Action Center' };
-            document.getElementById('header-title').innerText = titles[tabId];
-
-            if (tabId === 'dashboard') loadDashboard();
-            if (tabId === 'journal') loadJournal();
-            if (tabId === 'tasks') loadTasks();
-            lucide.createIcons();
-        }
-
-        // Initial Load
-        window.onload = () => {
-            loadDashboard();
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
         };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 
