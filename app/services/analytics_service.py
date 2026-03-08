@@ -1,24 +1,29 @@
 from sqlalchemy.orm import Session
 from app.repositories.entry_repository import EntryRepository
 from app.repositories.todo_repository import TodoRespository
-
+from datetime import datetime, timedelta
+from app.models.weekly_reflection_response import (
+    WeeklyReflectionResponse,
+    ReflectionPeriod,
+    EmotionStats,
+)
 
 class AnalyticsService:
     def __init__(self):
-    # We initialize the repos so that we can use them later on 
+        # We initialize the repos so that we can use them later on 
         self.entry_repo = EntryRepository()
         self.todo_repo = TodoRespository()
         
 
-    def get_dashboard_stats(self, db: Session):
+    def get_dashboard_stats(self, db: Session, user_id: int):
         """
-        Calculates advanced metrics for the Zenith Obsidian dashboard.
+        Calculates advanced metrics for the dashboard.
         Includes distribution, WoW sentiment velocity, and daily activity heatmaps.
         """
         from datetime import datetime, timedelta
         
-        all_entries = self.entry_repo.get_all(db)
-        all_todos = self.todo_repo.find_all(db)
+        all_entries = self.entry_repo.get_all(db, user_id)
+        all_todos = self.todo_repo.find_all(db, user_id)
 
         # 1. Distribution & Volume
         mood_dist = {}
@@ -69,4 +74,63 @@ class AnalyticsService:
             "activity_heatmap": activity_grid
         }
 
-    
+    def get_weekly_reflection(self, db: Session, user_id: int) -> WeeklyReflectionResponse:
+        now = datetime.now()
+        start = now - timedelta(days=7)
+
+        entries = self.entry_repo.get_all(db, user_id)
+
+        recent_entries = []
+        for entry in entries:
+            if entry.created_at is None:
+                continue
+            ts = entry.created_at.replace(tzinfo=None)
+            if start <= ts <= now:
+                recent_entries.append(entry)
+
+        # Build emotion counts
+        counts: dict[str, int] = {}
+        for entry in recent_entries:
+            mood = entry.sentiment or "Neutral"
+            counts[mood] = counts.get(mood, 0) + 1
+
+        dominant = max(counts, key=counts.get) if counts else None
+
+        period = ReflectionPeriod(
+            start_date=start.date(),
+            end_date=now.date(),
+        )
+
+        stats = EmotionStats(
+            total_entries=len(recent_entries),
+            emotions_count=counts,
+            dominant_emotion=dominant,
+        )
+
+        return WeeklyReflectionResponse(
+            period=period,
+            headline="Weekly reflection (draft)",
+            emotional_summary=(
+                f"Based on {len(recent_entries)} entries "
+                "from the last 7 days."
+            ),
+            patterns=[],
+            suggestions=[],
+            stats=stats,
+        )
+
+
+
+
+
+
+
+
+
+
+       
+        # 2. Load entries from EntryRepository for that user + time window
+        # 3. Compute emotion counts / dominant emotion
+        # 4. Build a compact text summary to send to the LLM
+        # 5. Call ollama.chat and parse the JSON response
+        # 6. Map the JSON to WeeklyReflectionResponse and return it
