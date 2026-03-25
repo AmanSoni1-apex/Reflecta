@@ -9,19 +9,19 @@ class EntryRepository:
         db.refresh(entry)
         return entry
 
-    def get_all(self, db: Session) -> list[Entry]:
-        return db.query(Entry).all()
+    def get_all(self, db: Session, user_id: int) -> list[Entry]:
+        return db.query(Entry).filter(Entry.user_id == user_id).all()
 
-    def get_by_id(self, db: Session, entry_id: int) -> Entry:
-        return db.query(Entry).filter(Entry.id == entry_id).first()
+    def get_by_id(self, db: Session, entry_id: int, user_id: int) -> Entry:
+        return db.query(Entry).filter(Entry.id == entry_id, Entry.user_id == user_id).first()
 
     def delete(self, db: Session, entry: Entry):
         db.delete(entry)
         db.commit()
 
-    def get_mood_counts(self, db: Session):
-        # 1. Get ALL entries (The raw pile)
-        all_entries = db.query(Entry).all()
+    def get_mood_counts(self, db: Session, user_id: int):
+        # 1. Get ONLY user's entries
+        all_entries = db.query(Entry).filter(Entry.user_id == user_id).all()
         
         # 2. Count them manually
         counts = {}

@@ -2,17 +2,22 @@
 # This file sets up SQLAlchemy ORM configuration, database engine, and session management
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from typing import Generator
 
-# Database URL (We changed this from todo.db to reflecta.db to force a schema update)
+
+# Use Environment Variable for DB URL, fallback to local SQLite
 DATABASE_URL = "sqlite:///./reflecta.db"
+
+# For SQLite, we need connect_args={"check_same_thread": False}
+connect_args = {"check_same_thread": False}
 
 # Create the engine
 # echo=True logs all SQL statements (useful for debugging)
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}  # SQLite specific: allows multiple threads
+    connect_args=connect_args
 )
 
 # SessionLocal factory for creating database sessions

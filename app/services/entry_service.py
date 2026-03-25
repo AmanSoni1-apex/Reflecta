@@ -18,8 +18,8 @@ class EntryService:
     def __init__(self):
         self.repo = EntryRepository() 
 
-    def analyze_thought(self,content:str):
-        # 1. The "job Description" for the AI
+    def analyze_thought(self, content: str) -> str:
+        # 1. Preparing the "Sieve" (Prompt)
         system_prompt = """  
         You are the psychological analyst for the 'Reflecta' app.
         Analyze the user's raw thought and return ONLY a json object with:
@@ -37,7 +37,7 @@ class EntryService:
         # 3. Pulling the text out of the response
         return response['message']['content']
 
-    def create_entry(self, db: Session, entry_data: EntryCreate) -> dict:
+    def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
         # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)
         ai_response_text = self.analyze_thought(entry_data.raw_content)
         
@@ -59,7 +59,8 @@ class EntryService:
         db_entry = Entry(
             raw_content=entry_data.raw_content,
             sentiment=insights.get("sentiment"),
-            summary=insights.get("summary")
+            summary=insights.get("summary"),
+            user_id=user_id
         )
         saved_entry = self.repo.save(db, db_entry)
 
@@ -72,11 +73,11 @@ class EntryService:
             "summary": saved_entry.summary
         }
 
-    def get_all_entries(self, db: Session) -> list[Entry]:
-        return self.repo.get_all(db)
+    def get_all_entries(self, db: Session, user_id: int) -> list[Entry]:
+        return self.repo.get_all(db, user_id)
 
-    def delete_entry(self, db: Session, entry_id: int):
-        entry = self.repo.get_by_id(db, entry_id)
+    def delete_entry(self, db: Session, entry_id: int, user_id: int):
+        entry = self.repo.get_by_id(db, entry_id, user_id)
         if not entry:
             return None
         self.repo.delete(db, entry)

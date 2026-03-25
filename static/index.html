@@ -4,7 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reflecta — A Private Cognitive Mirror</title>
+    <title>Reflecta - A Private Cognitive Mirror</title>
+    <meta name="description"
+        content="Reflecta is a privacy-first cognitive mirror that uses Local and Cloud AI to help you identify patterns in your thoughts and master metacognition.">
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Reflecta - A Private Cognitive Mirror">
+    <meta property="og:description" content="Master your mind with local-first AI analysis.">
+    <meta property="og:image" content="/static/assets/dashboard_preview.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -134,6 +142,33 @@
             border-radius: 0 0 20px 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 
@@ -163,7 +198,7 @@
             <div class="fade-in" style="animation-delay: 0.2s;">
                 <div class="laptop-frame glow-orange">
                     <div class="laptop-screen">
-                        <img src="/static/assets/dashboard_preview.png.png" alt="Reflecta Dashboard"
+                        <img src="/static/assets/dashboard_preview.png" alt="Reflecta Dashboard"
                             class="w-full opacity-90 hover:opacity-100 transition-opacity duration-500">
                     </div>
                 </div>
@@ -407,7 +442,7 @@
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-purple-400"></div>
                     <div>
-                        <p class="font-bold text-white">Aman Soni</p>
+                        <p class="font-bold text-white">Aman</p>
                         <p class="text-sm text-gray-500 font-mono">Creator of Reflecta</p>
                     </div>
                 </div>
@@ -428,17 +463,90 @@
 
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
-                <a href="/dashboard"
+                <button onclick="openModal('login')"
                     class="group px-10 py-5 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-2xl text-xl font-bold text-black hover:shadow-2xl hover:shadow-orange-400/50 transition-all duration-300 hover:scale-105">
                     Try Reflecta
                     <i data-lucide="arrow-right"
                         class="w-5 h-5 inline ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+                </button>
                 <a href="https://github.com/AmanSoni1-apex/Reflecta" target="_blank"
                     class="group px-10 py-5 glass rounded-2xl text-xl font-bold text-white hover:border-white/20 transition-all duration-300 flex items-center gap-3">
                     <i data-lucide="github" class="w-6 h-6"></i>
                     View on GitHub
                 </a>
+            </div>
+
+            <!-- MODALS -->
+            <div id="auth-modal" class="modal" onclick="closeModalOnBg(event)">
+                <div class="modal-content glass shadow-2xl relative">
+                    <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+
+                    <!-- Login Form -->
+                    <div id="login-section">
+                        <h3 class="text-3xl font-black mb-2">Welcome Back</h3>
+                        <p class="text-gray-500 text-sm mb-8">Enter your signals to continue.</p>
+
+                        <form onsubmit="handleAuth(event, 'login')" class="space-y-4">
+                            <div>
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-2">Email</label>
+                                <input type="email" id="login-email" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-400 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-2">Password</label>
+                                <input type="password" id="login-password" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-400 outline-none transition-all">
+                            </div>
+                            <button type="submit" id="login-btn"
+                                class="w-full py-4 bg-orange-400 hover:bg-orange-300 text-black font-bold rounded-xl transition-all active:scale-95 mt-4">
+                                Sign In
+                            </button>
+                        </form>
+                        <p class="text-xs text-center mt-6 text-gray-500">
+                            Don't have access? <button onclick="toggleAuthMode('signup')"
+                                class="text-orange-400 font-bold hover:underline">Register</button>
+                        </p>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signup-section" class="hidden">
+                        <h3 class="text-3xl font-black mb-2">Open Account</h3>
+                        <p class="text-gray-500 text-sm mb-8">Start your reflection journey.</p>
+
+                        <form onsubmit="handleAuth(event, 'register')" class="space-y-4">
+                            <div>
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-2">Username</label>
+                                <input type="text" id="signup-username" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-400 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-2">Email</label>
+                                <input type="email" id="signup-email" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-400 outline-none transition-all">
+                            </div>
+                            <div>
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-600 block mb-2">Password</label>
+                                <input type="password" id="signup-password" required minlength="8"
+                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-400 outline-none transition-all">
+                            </div>
+                            <button type="submit" id="register-btn"
+                                class="w-full py-4 bg-orange-400 hover:bg-orange-300 text-black font-bold rounded-xl transition-all active:scale-95 mt-4">
+                                Create Account
+                            </button>
+                        </form>
+                        <p class="text-xs text-center mt-6 text-gray-500">
+                            Already reflecting? <button onclick="toggleAuthMode('login')"
+                                class="text-orange-400 font-bold hover:underline">Login</button>
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <!-- Footer -->
@@ -494,6 +602,95 @@
                 }
             });
         });
+
+        // AUTH LOGIC
+        const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+            ? '' 
+            : 'https://reflecta-api.onrender.com'; // UPDATE THIS after your Render deployment
+
+        function openModal(mode = 'login') {
+            document.getElementById('auth-modal').classList.add('active');
+            toggleAuthMode(mode);
+        }
+
+        function closeModal() {
+            document.getElementById('auth-modal').classList.remove('active');
+        }
+
+        function closeModalOnBg(e) {
+            if (e.target.id === 'auth-modal') closeModal();
+        }
+
+        function toggleAuthMode(mode) {
+            if (mode === 'login') {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('signup-section').classList.add('hidden');
+            } else {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('signup-section').classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        async function handleAuth(e, type) {
+            e.preventDefault();
+            const btn = document.getElementById(`${type}-btn`);
+            const originalText = btn.innerText;
+            btn.innerText = 'Syncing...';
+            btn.disabled = true;
+
+            try {
+                if (type === 'register') {
+                    const username = document.getElementById('signup-username').value;
+                    const email = document.getElementById('signup-email').value;
+                    const password = document.getElementById('signup-password').value;
+
+                    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, email, password })
+                    });
+
+                    if (res.ok) {
+                        alert('Account created! Sign in now.');
+                        toggleAuthMode('login');
+                    } else {
+                        const err = await res.json();
+                        alert(err.detail || 'Registration failed');
+                    }
+                } else {
+                    const email = document.getElementById('login-email').value;
+                    const password = document.getElementById('login-password').value;
+
+                    // OAuth2 Password flow expects URL-encoded form data
+                    const body = new URLSearchParams();
+                    body.append('username', email); // backend uses 'username' field for email
+                    body.append('password', password);
+
+                    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        localStorage.setItem('reflecta_token', data.access_token);
+                        window.location.href = '/dashboard'; // Redirect to dashboard
+                    } else {
+                        const err = await res.json();
+                        alert(err.detail || 'Invalid credentials');
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error. Server might be down.');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+        lucide.createIcons();
     </script>
 </body>
 

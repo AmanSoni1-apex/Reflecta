@@ -28,23 +28,17 @@ class TodoRespository:
         db.refresh(todo)
         return todo
 
-    def find_all(self, db: Session) -> list[Todo]:
+    def find_all(self, db: Session, user_id: int) -> list[Todo]:
         """
-        Retrieve all Todos from the database
-        
-        Args:
-            db: SQLAlchemy database session
-            
-        Returns:
-            List of all Todo objects
+        Retrieve all Todos for a specific user
         """
-        return db.query(Todo).all()
+        return db.query(Todo).filter(Todo.user_id == user_id).all()
 
-    def find_by_id(self, db: Session, todo_id: int) -> Todo | None:
+    def find_by_id(self, db: Session, todo_id: int, user_id: int) -> Todo | None:
         """
-        Retrieve a single Todo by its ID
+        Retrieve a single Todo by its ID and user
         """
-        return db.query(Todo).filter(Todo.id == todo_id).first()
+        return db.query(Todo).filter(Todo.id == todo_id, Todo.user_id == user_id).first()
 
     def update(self, db: Session, todo: Todo, updated_data: dict) -> Todo:
         """
@@ -63,11 +57,9 @@ class TodoRespository:
         db.delete(todo)
         db.commit()
 
-    def get_category_counts(self, db: Session):
-        # 1. Get ALL Todos
-        all_todos = db.query(Todo).all()
+    def get_category_counts(self, db: Session, user_id: int):
+        all_todos = db.query(Todo).filter(Todo.user_id == user_id).all()
         
-        # 2. Count them manually
         counts = {}
         for todo in all_todos:
             cat = todo.category
@@ -76,6 +68,5 @@ class TodoRespository:
             else:
                 counts[cat] = 1
                 
-        # 3. Return the result
         return list(counts.items())
 

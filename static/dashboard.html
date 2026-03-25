@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reflecta</title>
+    <title>Reflecta | Cognitive Dashboard</title>
+    <meta name="description" content="Your private space for reflection and task mastery.">
     <!-- Tailwind CSS 3.x -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- HTMX -->
@@ -42,6 +43,13 @@
             display: block;
         }
     </style>
+    <script>
+        // Auth Guard: Immediate Redirect if no token
+        const token = localStorage.getItem('reflecta_token');
+        if (!token) {
+            window.location.href = '/static/index.html';
+        }
+    </script>
 </head>
 
 <body class="flex min-h-screen overflow-hidden">
@@ -79,10 +87,14 @@
         <div class="pt-6 border-t border-white/5 mt-auto">
             <div class="flex items-center">
                 <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex-shrink-0"></div>
-                <div class="ml-3 overflow-hidden">
-                    <p class="text-sm font-semibold truncate text-white">Aman Soni</p>
-                    <!-- <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Pro Member</p> -->
+                <div class="ml-3 overflow-hidden flex-1">
+                    <p class="text-sm font-semibold truncate text-white" id="profile-name">User</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Local Sync Active</p>
                 </div>
+                <button onclick="signOut()" class="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                    title="Sign Out">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
     </aside>
@@ -94,7 +106,7 @@
         <header class="flex items-center justify-between mb-10 pb-6 border-b border-white/5">
             <div>
                 <!-- <h2 class="text-xs font-medium text-gray-500 uppercase tracking-[0.2em]">Zenith Hub</h2> -->
-                <h1 class="text-3xl font-bold mt-1" id="header-title">Welcome back, Aman</h1>
+                <h1 class="text-3xl font-bold mt-1" id="header-title">Welcome back</h1>
             </div>
             <div class="flex items-center space-x-4">
                 <button
@@ -255,6 +267,34 @@
     </main>
 
     <script>
+        // Configuration for Hybrid Deployment
+        const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+            ? '' 
+            : 'https://reflecta-api.onrender.com'; // UPDATE THIS after your Render deployment
+
+        // Global Auth Config
+        const authHeaders = {
+            'Authorization': `Bearer ${localStorage.getItem('reflecta_token')}`,
+            'Content-Type': 'application/json'
+        };
+
+        // Global Error Handler for 401s
+        async function secureFetch(url, options = {}) {
+            // Ensure the URL includes the BASE_URL if it's an API call
+            const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+            const res = await fetch(fullUrl, options);
+            if (res.status === 401) {
+                signOut();
+                return;
+            }
+            return res;
+        }
+
+        function signOut() {
+            localStorage.removeItem('reflecta_token');
+            window.location.href = '/static/index.html';
+        }
+
         // Init Lucide
         lucide.createIcons();
 
@@ -264,8 +304,21 @@
         // Data Management
         async function loadDashboard() {
             try {
-                const res = await fetch('/analytics/dashboard');
+                const res = await secureFetch('/analytics/dashboard/', { headers: authHeaders });
                 const stats = await res.json();
+
+                // Decode token for profile name
+                const token = localStorage.getItem('reflecta_token');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        if (payload.name) {
+                            document.getElementById('header-title').textContent = `Welcome back, ${payload.name}`;
+                        }
+                    } catch (e) {
+                        console.error("Failed to decode token:", e);
+                    }
+                }
 
                 const velocityColor = stats.sentiment_velocity >= 0 ? 'emerald-400' : 'red-400';
                 const velocityIcon = stats.sentiment_velocity >= 0 ? '↑' : '↓';
@@ -355,8 +408,9 @@
                 }
             });
 
-            const catLabels = Object.keys(stats.category_distribution || { 'Focus': 1, 'Deep': 1 });
-            const catData = Object.values(stats.category_distribution || { 'Focus': 1, 'Deep': 1 });
+            const categories = ['Work', 'Personal', 'Home', 'Health', 'Errand', 'General'];
+            const catLabels = categories;
+            const catData = categories.map(cat => stats.category_distribution[cat] || 0);
 
             categoryChartInstance = new Chart(ctxCat, {
                 type: 'radar',
@@ -374,6 +428,8 @@
                 options: {
                     scales: {
                         r: {
+                            min: 0,
+                            suggestedMax: 5,
                             grid: { color: 'rgba(255,255,255,0.05)' },
                             angleLines: { color: 'rgba(255,255,255,0.05)' },
                             pointLabels: { font: { size: 10, weight: '500' }, color: '#94a3b8' },
@@ -389,7 +445,7 @@
 
         async function loadJournal() {
             try {
-                const res = await fetch('/entries');
+                const res = await secureFetch('/entries/', { headers: authHeaders });
                 const entries = await res.json();
                 const feed = document.getElementById('journal-feed');
                 feed.innerHTML = entries.length ? entries.reverse().map(e => {
@@ -400,7 +456,7 @@
                                 <span class="text-[10px] font-black uppercase tracking-widest text-${moodColor} bg-${moodColor}/5 px-2 py-0.5 rounded-full border border-${moodColor}/10">${e.sentiment || 'SIGNAL'}</span>
                                 <div class="flex items-center space-x-3 text-gray-600">
                                     <span class="text-[10px] font-medium tracking-tight">${new Date(e.created_at).toLocaleDateString()}</span>
-                                    <button onclick="deleteEntry(${e.id})" class="hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                                    <button onclick="deleteEntry(${e.id})" class="hover:text-red-400 transition-all opacity-0 group-hover:opacity-100 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                                 </div>
                             </div>
                             <h4 class="text-base font-bold text-white leading-tight opacity-90">${e.summary || 'Deep Syncing...'}</h4>
@@ -414,7 +470,7 @@
 
         async function loadTasks() {
             try {
-                const res = await fetch('/todos');
+                const res = await secureFetch('/todos/', { headers: authHeaders });
                 const todos = await res.json();
                 const list = document.getElementById('task-list');
                 list.innerHTML = todos.length ? todos.map(t => {
@@ -465,9 +521,9 @@
             if (!confirm(`Purge ${ids.length} selected assignments?`)) return;
 
             try {
-                const res = await fetch('/todos/bulk-delete', {
+                const res = await secureFetch('/todos/bulk-delete/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify(ids)
                 });
                 if (res.ok) {
@@ -488,9 +544,9 @@
             btn.disabled = true;
 
             try {
-                const res = await fetch('/entries', {
+                const res = await secureFetch('/entries/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ raw_content: content })
                 });
                 if (res.ok) {
@@ -533,9 +589,9 @@
             titleInput.value = ''; // Clear input immediately
 
             try {
-                const res = await fetch('/todos', {
+                const res = await secureFetch('/todos/', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({ title: title })
                 });
 
@@ -558,7 +614,7 @@
         async function deleteTask(id) {
             if (!confirm('Purge this assignment?')) return;
             try {
-                const res = await fetch(`/todos/${id}`, { method: 'DELETE' });
+                const res = await secureFetch(`/todos/${id}/`, { method: 'DELETE', headers: authHeaders });
                 if (res.ok) {
                     loadTasks();
                     loadDashboard();
@@ -569,7 +625,10 @@
         async function deleteEntry(id) {
             if (!confirm('Expunge this reflection?')) return;
             try {
-                const res = await fetch(`/entries/${id}`, { method: 'DELETE' });
+                const res = await secureFetch(`/entries/${id}/`, {
+                    method: 'DELETE',
+                    headers: authHeaders
+                });
                 if (res.ok) {
                     loadJournal();
                     loadDashboard();
@@ -579,17 +638,14 @@
 
         async function toggleTask(id) {
             try {
-                // To toggle, we first need the current state or just send the new state 
-                // Since our UI already 'knows' the state, we can simplify or fetch first.
-                // But for a 'Gold' feel, let's just fetch all todos, find the one, and flip it.
-                const res = await fetch('/todos');
+                const res = await secureFetch('/todos/', { headers: authHeaders });
                 const todos = await res.json();
                 const todo = todos.find(t => t.id === id);
                 if (!todo) return;
 
-                const updateRes = await fetch(`/todos/${id}`, {
+                const updateRes = await secureFetch(`/todos/${id}/`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({
                         title: todo.title,
                         description: todo.description,
@@ -624,6 +680,18 @@
 
         // Initial Load
         window.onload = () => {
+            // Display User Identifier if possible
+            const token = localStorage.getItem('reflecta_token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload && payload.sub) {
+                        document.getElementById('profile-name').innerText = `Reflector #${payload.sub}`;
+                    }
+                } catch (e) {
+                    console.error("Token decode failed", e);
+                }
+            }
             loadDashboard();
         };
     </script>

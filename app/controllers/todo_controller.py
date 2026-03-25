@@ -15,73 +15,71 @@ from app.services.todo_service import TodoService
 from app.models.todo_request import TodoCreate
 from app.models.todo_response import TodoResponse
 from app.config.database import get_db
+from app.auth.deps import get_current_user
+from app.auth.auth_models import User
 
 router = APIRouter()
 service = TodoService()
 
 
 @router.post("/", response_model=TodoResponse)
-def create(todo: TodoCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def create(todo: TodoCreate, background_tasks: BackgroundTasks, 
+           db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Create a new Todo with immediate response and background AI refinement.
     """
-    return service.create_todo(db, todo, background_tasks)
+    return service.create_todo(db, todo, current_user.id, background_tasks)
 
 
 
 @router.get("/", response_model=list[TodoResponse])
-def get_todo(db: Session = Depends(get_db)):
+def get_todo(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Get all Todos
-    
-    Args:
-        db: Database session injected by FastAPI dependency injection
-        
-    Returns:
-        List of all Todos
     """
-    return service.get_all_todos(db)
+    return service.get_all_todos(db, current_user.id)
 
 
 @router.get("/{todo_id}", response_model=TodoResponse)
-def get_todo_by_id(todo_id: int, db: Session = Depends(get_db)):
+def get_todo_by_id(todo_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Get a single Todo by ID
     """
-    todo = service.get_todo_by_id(db, todo_id)
+    todo = service.get_todo_by_id(db, todo_id, current_user.id)
     if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
 
 @router.put("/{todo_id}", response_model=TodoResponse)
-def update_todo(todo_id: int, todo: TodoCreate, db: Session = Depends(get_db)):
+def update_todo(todo_id: int, todo: TodoCreate, db: Session = Depends(get_db), 
+                current_user: User = Depends(get_current_user)):
     """
     Update a Todo by ID
     """
-    updated_todo = service.update_todo(db, todo_id, todo)
+    updated_todo = service.update_todo(db, todo_id, todo, current_user.id)
     if not updated_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return updated_todo
 
 
 @router.delete("/{todo_id}")
-def delete_todo(todo_id: int, db: Session = Depends(get_db)):
+def delete_todo(todo_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Delete a Todo by ID
     """
-    success = service.delete_todo(db, todo_id)
+    success = service.delete_todo(db, todo_id, current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Todo not found")
     return {"message": "Todo deleted successfully"}
 
 
 @router.post("/bulk-delete")
-def bulk_delete(ids: list[int], db: Session = Depends(get_db)):
+def bulk_delete(ids: list[int], db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
     Delete multiple Todos by their IDs
     """
-    count = service.delete_todos(db, ids)
+    count = service.delete_todos(db, ids, current_user.id)
     return {"message": f"Successfully purged {count} assignments", "count": count}
 
 

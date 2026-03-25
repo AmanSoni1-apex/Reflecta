@@ -2,11 +2,8 @@ from sqlalchemy.orm import Session
 from app.repositories.entry_repository import EntryRepository
 from app.repositories.todo_repository import TodoRespository
 from datetime import datetime, timedelta
-from app.models.weekly_reflection_response import (
-    WeeklyReflectionResponse,
-    ReflectionPeriod,
-    EmotionStats,
-)
+from app.models.weekly_reflection_response import ReflectionPeriod,EmotionStats,WeeklyReflectionResponse
+
 
 class AnalyticsService:
     def __init__(self):
@@ -118,19 +115,3 @@ class AnalyticsService:
             suggestions=[],
             stats=stats,
         )
-
-
-
-
-
-
-
-
-
-
-       
-        # 2. Load entries from EntryRepository for that user + time window
-        # 3. Compute emotion counts / dominant emotion
-        # 4. Build a compact text summary to send to the LLM
-        # 5. Call ollama.chat and parse the JSON response
-        # 6. Map the JSON to WeeklyReflectionResponse and return it

@@ -3,6 +3,7 @@
 # You can say that it's the "application.java" file in Spring Boot
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.controllers.todo_controller import router as todo_router
@@ -11,12 +12,24 @@ from app.config.database import engine, Base
 from app.models.todo_model import Todo
 from app.models.entry_model import Entry
 from app.controllers.analytics_controller import router as analytics_router
+from app.auth.auth_controller import router as auth_router
+from app.controllers.admin_controller import router as admin_router
+from app.auth.auth_models import User
 import os
 
 # Create all database tables on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# Add CORS Middleware for Hybrid Deployment
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For production, replace with your Cloudflare Pages URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Ensure 'static' directory exists for serving
 if not os.path.exists("static"):
@@ -39,3 +52,5 @@ def read_dashboard():
 app.include_router(todo_router, prefix="/todos")
 app.include_router(entry_router, prefix="/entries")
 app.include_router(analytics_router, prefix="/analytics")
+app.include_router(auth_router ,prefix="/auth")
+app.include_router(admin_router ,prefix="/admin")

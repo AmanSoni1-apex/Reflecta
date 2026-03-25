@@ -20,3 +20,4 @@ env/
 # IDE
 .vscode/
 .idea/
+.Notes.md
