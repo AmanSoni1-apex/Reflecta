@@ -1,11 +1,12 @@
 import ollama
 import json
+import os
 import re # re -> regular expression AI models are "chatty." Even if you ask for JSON, they often add extra words like "Sure, here it is..." which breaks our code , re module acts like a JSON Magnet. It scans a big pile of messy text, ignores the talkative noise, and "extracts" only the part between { and }.
 from sqlalchemy.orm import Session
 from app.repositories.entry_repository import EntryRepository
 from app.models.entry_model import Entry
 from app.models.entry_request import EntryCreate
-
+from openai import OpenAI 
 class EntryService:
 
 #  Basiclly the processing time depends on 2 thing( 3 in your case ) :-
@@ -29,13 +30,29 @@ class EntryService:
         """
 
         # 2. Making the call to the Local Brain
-        response = ollama.chat(model='gemma3:4b', messages=[
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': content},
-        ])
+        # response = ollama.chat(model='gemma3:4b', messages=[
+        #     {'role': 'system', 'content': system_prompt},
+        #     {'role': 'user', 'content': content},
+        # ])
 
         # 3. Pulling the text out of the response
-        return response['message']['content']
+        # return response['message']['content']
+
+
+        # Making the call to OpenRouter
+        client=OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.environ.get("OPENROUTER_API_KEY")
+            )
+
+        response=client.chat.completions.create(
+            model="google/gemini-2.5-flash",
+            messages=[
+                {'role':'system','content':system_prompt},  
+                {'role':'user','content':content},
+                ]
+        )
+        return response.choices[0].message.content
 
     def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
         # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)

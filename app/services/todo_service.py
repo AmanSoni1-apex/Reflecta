@@ -9,6 +9,8 @@ from app.models.todo_request import TodoCreate
 import ollama
 import json
 import re 
+import os 
+from openai import OpenAI
 
 
 class TodoService:
@@ -93,11 +95,21 @@ class TodoService:
         content = f"Task: {title}\nDescription: {description}"
         
         try:
-            response = ollama.chat(model='gemma3:4b', messages=[
-                {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': content},
-            ])
-            ai_text = response['message']['content']
+            client=OpenAI(
+               base_url="https://openrouter.ai/api/v1", # Changed to https
+               api_key=os.environ.get("OPENROUTER_API_KEY")
+            )
+            
+            response=client.chat.completions.create(
+                model="google/gemini-2.5-flash",
+                messages=[                              # Changed to messages (plural)
+                    {'role':'system','content':system_prompt},  
+                    {'role':'user','content':content},
+                ]
+            )
+            ai_text = response.choices[0].message.content
+
+
             
             # Simple JSON extraction
             json_match = re.search(r'\{.*\}', ai_text, re.DOTALL)
