@@ -1,3 +1,4 @@
+import requests
 import ollama
 import json
 import os
@@ -29,30 +30,21 @@ class EntryService:
         "summary": (A one-sentence clean version of the thought)
         """
 
-        # 2. Making the call to the Local Brain
-        # response = ollama.chat(model='gemma3:4b', messages=[
-        #     {'role': 'system', 'content': system_prompt},
-        #     {'role': 'user', 'content': content},
-        # ])
-
-        # 3. Pulling the text out of the response
-        # return response['message']['content']
-
-
-        # Making the call to OpenRouter
-        client=OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=os.environ.get("OPENROUTER_API_KEY")
-            )
-
-        response=client.chat.completions.create(
-            model="google/gemini-2.5-flash",
-            messages=[
-                {'role':'system','content':system_prompt},  
-                {'role':'user','content':content},
-                ]
-        )
-        return response.choices[0].message.content
+        api_url="https://openrouter.ai/api/v1/chat/completions"
+        header={
+            "Authorization": "Bearer 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"
+        }
+        payload={
+            "model":"alibaba/tongyi-deepresearch-30b-a3b",
+            "temprature":0,
+            "messages":[
+                {'role':'system' ,'content':system_prompt},
+                {'role':'user' ,'content':content}
+            ]
+        }
+        response=requests.post(api_url,headers=header,json=payload)
+        data=response.json()
+        return data['choices'][0]['message']['content']
 
     def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
         # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)

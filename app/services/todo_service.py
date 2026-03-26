@@ -2,6 +2,7 @@
 # Here we write the core or the main business logic
 # It's something like "@Service" in Spring Boot
 
+import json
 from sqlalchemy.orm import Session
 from app.repositories.todo_repository import TodoRespository
 from app.models.todo_model import Todo
@@ -87,35 +88,33 @@ class TodoService:
     def refine_todo(self, title: str, description: str = ""):
         system_prompt = """
         You are a productivity expert for the 'Reflecta' app.
-        Analyze the task and return ONLY a JSON object with:
+        Analyze the task and return ONLY a valid JSON object with:
         "category": (One word: Work, Personal, Home, Health, Errand, or Other)
         "priority": (One word: High, Medium, or Low)
         """
         
         content = f"Task: {title}\nDescription: {description}"
-        
+
+        api_url="https://openrouter.ai/api/v1/chat/completions"
+        header={
+            "Authorization": "Bearer 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"
+        }
+
         try:
-            client=OpenAI(
-               base_url="https://openrouter.ai/api/v1", # Changed to https
-               api_key=os.environ.get("OPENROUTER_API_KEY")
-            )
+            payload={
+                "model":"alibaba/tongyi-deepresearch-30b-a3b",
+                "temperature":0,
+                "messages":[
+                    {'role':'system' ,'content':system_prompt},
+                    # {'role':'user' , 'title':title ,'description':description}
+                    {'role':'user' , 'content':content}
+                    ]
+                }
+            response=requests.post(api_url , header=header , json=payload)
+            data=response.json()
+            return data['choices'][0]['message']['content']
             
-            response=client.chat.completions.create(
-                model="google/gemini-2.5-flash",
-                messages=[                              # Changed to messages (plural)
-                    {'role':'system','content':system_prompt},  
-                    {'role':'user','content':content},
-                ]
-            )
-            ai_text = response.choices[0].message.content
-
-
-            
-            # Simple JSON extraction
-            json_match = re.search(r'\{.*\}', ai_text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
         except Exception as e:
-            print(f"AI Refinement failed: {e}")
-            
-        return {"category": "General", "priority": "Medium"}
+            print(f"AI Refinement failed:{e}")
+            return {"category": "General", "priority": "Medium"}
+
