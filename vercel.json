@@ -1,0 +1,30 @@
+{
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(todos|entries|analytics|auth|admin)/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/static/dashboard.html"
+    },
+    {
+      "src": "/",
+      "dest": "/static/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/static/$1"
+    }
+  ]
+}

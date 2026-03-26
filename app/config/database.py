@@ -5,10 +5,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from typing import Generator
+import os
 
-
-# Use Environment Variable for DB URL, fallback to local SQLite
-DATABASE_URL = "sqlite:///./reflecta.db"
+# Use /tmp for read-write access in serverless environments like Vercel
+if os.environ.get("VERCEL")=="1":
+    DATABASE_URL =  "sqlite:////tmp/reflecta.db"
+else:
+    DATABASE_URL = "sqlite:///./reflecta.db"
 
 # For SQLite, we need connect_args={"check_same_thread": False}
 connect_args = {"check_same_thread": False}
