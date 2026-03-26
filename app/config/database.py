@@ -8,7 +8,7 @@ from typing import Generator
 import os
 
 # Grab the Supabase URL from Vercel, or use local SQLite for your PC
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./reflecta.db")
+DATABASE_URL = os.environ.get("postgresql://postgres:amansoni4144@gmail.com@db.uptjxuaqglnjdhbjhume.supabase.co:5432/postgres", "sqlite:///./reflecta.db")
 
 # Only allow check_same_thread for SQLite (Postgres doesn't need it)
 connect_args = {}
