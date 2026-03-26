@@ -18,7 +18,7 @@ from app.auth.auth_models import User
 import os
 
 # Create all database tables on startup
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
