@@ -32,11 +32,11 @@ class EntryService:
 
         api_url="https://openrouter.ai/api/v1/chat/completions"
         header={
-            "Authorization": "Bearer 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"
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"
         }
         payload={
-            "model":"alibaba/tongyi-deepresearch-30b-a3b",
-            "temprature":0,
+            "model": "google/gemini-2.0-flash-lite",
+            "temperature":0,
             "messages":[
                 {'role':'system' ,'content':system_prompt},
                 {'role':'user' ,'content':content}
