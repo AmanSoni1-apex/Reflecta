@@ -32,21 +32,37 @@ class EntryService:
 
         api_url="https://openrouter.ai/api/v1/chat/completions"
         header={
-            "Authorization": "Bearer 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"
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"
         }
         payload={
+<<<<<<< HEAD
             # "model":"alibaba/tongyi-deepresearch-30b-a3b",
             "model": "google/gemini-2.5-flash-lite",
             "temprature":0,
+=======
+             "model": "google/gemini-2.5-flash-lite",
+            "temperature":0,
+>>>>>>> e981dcf72baf2b27f5d4c748517ebd3c835e924c
             "messages":[
                 {'role':'system' ,'content':system_prompt},
                 {'role':'user' ,'content':content}
             ]
+<<<<<<< HEAD
         }        
         response = requests.post(api_url, headers=header, json=payload)
         data = response.json()
         print("DEBUG OPENROUTER RESPONSE:", json.dumps(data, indent=2)) 
         return data['choices'][0]['message']['content']
+=======
+        }
+        # response=requests.post(api_url,headers=header,json=payload)
+        # data=response.json()
+        # return data['choices'][0]['message']['content']
+          response = requests.post(api_url, headers=header, json=payload)
+          data = response.json()
+          print("DEBUG OPENROUTER RESPONSE:", json.dumps(data, indent=2))  # ← add karo
+          return data['choices'][0]['message']['content']
+>>>>>>> e981dcf72baf2b27f5d4c748517ebd3c835e924c
 
     def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
         # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)
