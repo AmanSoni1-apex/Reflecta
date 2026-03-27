@@ -35,16 +35,20 @@ class EntryService:
             "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}"
         }
         payload={
-            "model": "google/gemini-2.0-flash-lite",
+             "model": "google/gemini-2.5-flash-lite",
             "temperature":0,
             "messages":[
                 {'role':'system' ,'content':system_prompt},
                 {'role':'user' ,'content':content}
             ]
         }
-        response=requests.post(api_url,headers=header,json=payload)
-        data=response.json()
-        return data['choices'][0]['message']['content']
+        # response=requests.post(api_url,headers=header,json=payload)
+        # data=response.json()
+        # return data['choices'][0]['message']['content']
+          response = requests.post(api_url, headers=header, json=payload)
+          data = response.json()
+          print("DEBUG OPENROUTER RESPONSE:", json.dumps(data, indent=2))  # ← add karo
+          return data['choices'][0]['message']['content']
 
     def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
         # Step A: Pass the mud through the "Sieve" FIRST (So we can save the results)
