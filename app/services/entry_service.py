@@ -35,15 +35,17 @@ class EntryService:
             "Authorization": "Bearer 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"
         }
         payload={
-            "model":"alibaba/tongyi-deepresearch-30b-a3b",
+            # "model":"alibaba/tongyi-deepresearch-30b-a3b",
+            "model": "google/gemini-2.5-flash-lite",
             "temprature":0,
             "messages":[
                 {'role':'system' ,'content':system_prompt},
                 {'role':'user' ,'content':content}
             ]
-        }
-        response=requests.post(api_url,headers=header,json=payload)
-        data=response.json()
+        }        
+        response = requests.post(api_url, headers=header, json=payload)
+        data = response.json()
+        print("DEBUG OPENROUTER RESPONSE:", json.dumps(data, indent=2)) 
         return data['choices'][0]['message']['content']
 
     def create_entry(self, db: Session, entry_data: EntryCreate, user_id: int) -> dict:
